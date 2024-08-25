@@ -3,6 +3,7 @@ import requests
 
 
 class ModelInterface:
+
     def check_token_valid(self) -> bool:
         pass
 
@@ -17,21 +18,24 @@ class ModelInterface:
 
 
 class OpenAIModel(ModelInterface):
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.base_url = 'https://api.openai.com/v1'
 
     def _request(self, method, endpoint, body=None, files=None):
-        self.headers = {
-            'Authorization': f'Bearer {self.api_key}'
-        }
+        self.headers = {'Authorization': f'Bearer {self.api_key}'}
         try:
             if method == 'GET':
-                r = requests.get(f'{self.base_url}{endpoint}', headers=self.headers)
+                r = requests.get(f'{self.base_url}{endpoint}',
+                                 headers=self.headers)
             elif method == 'POST':
                 if body:
                     self.headers['Content-Type'] = 'application/json'
-                r = requests.post(f'{self.base_url}{endpoint}', headers=self.headers, json=body, files=files)
+                r = requests.post(f'{self.base_url}{endpoint}',
+                                  headers=self.headers,
+                                  json=body,
+                                  files=files)
             r = r.json()
             if r.get('error'):
                 return False, None, r.get('error', {}).get('message')
@@ -43,10 +47,7 @@ class OpenAIModel(ModelInterface):
         return self._request('GET', '/models')
 
     def chat_completions(self, messages, model_engine) -> str:
-        json_body = {
-            'model': model_engine,
-            'messages': messages
-        }
+        json_body = {'model': model_engine, 'messages': messages}
         return self._request('POST', '/chat/completions', body=json_body)
 
     def audio_transcriptions(self, file_path, model_engine) -> str:
@@ -60,6 +61,6 @@ class OpenAIModel(ModelInterface):
         json_body = {
             "prompt": prompt,
             "n": 1,
-            "size": "1024x720"
+            "size": "1600x1600"
         }
         return self._request('POST', '/images/generations', body=json_body)
